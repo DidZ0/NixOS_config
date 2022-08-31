@@ -62,6 +62,7 @@
     brave
     flameshot
     git
+    vscode
   ];
 
 
