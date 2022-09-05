@@ -1,11 +1,14 @@
 { config, pkgs, ... }:
 
+
+
 {
   imports =
     [ 
       ./hardware-configuration.nix
     ];
 
+  nixpkgs.config.allowUnfree = true;
 
   # BOOT
   boot.loader.systemd-boot.enable = true;
@@ -33,8 +36,8 @@
   networking.hostName = "nixlap";
   networking.wireless.enable = true;
   networking.wireless.networks = {
-	SITIO_BORGNODES = {
-		psk = "BGns3.6**";
+	Freebox-5E5956 = {
+		psk = "*1BudokaOne1303*";
 	};
   };
 
@@ -42,13 +45,13 @@
  # X11 
   services.xserver.enable = true;
   services.xserver.layout = "us";
-  services.xserver.xkbVariant = "colemak";
+  services.xserver.xkbVariant = "intl";
   services.xserver.libinput.enable = true;
   services.xserver.windowManager.dwm.enable = true;
 
   # SOUND
-  # sound.enable = true;
-  # hardware.pulseaudio.enable = true;
+  sound.enable = true;
+  security.rtkit.enable = true;
 
   # PACKAGES
   environment.systemPackages = with pkgs; [
@@ -63,13 +66,56 @@
     flameshot
     git
     vscode
+    arandr
+    jdk
+    insomnia
+    sbt
+    nodejs
+    yarn
   ];
 
 
 
   # SERVICES
-  # services.openssh.enable = true;
+  services.gnome3.gnome-keyring.enable = true;
+  services.gnome3.seahorse.enable = true;
+  services.openssh.enable = true;
+  hardware.bluetooth.enable = true;
+  services.pipewire = {
+  	enable = true;
+	alsa.enable = true;
+	alsa.support32Bit = true;
+	pulse.enable = true;
+	media-session.config.bluez-monitor.rules = [
+    {
+      # Matches all cards
+      matches = [ { "device.name" = "~bluez_card.*"; } ];
+      actions = {
+        "update-props" = {
+          "bluez5.reconnect-profiles" = [ "hfp_hf" "hsp_hs" "a2dp_sink" ];
+          # mSBC is not expected to work on all headset + adapter combinations.
+          "bluez5.msbc-support" = true;
+          # SBC-XQ is not expected to work on all headset + adapter combinations.
+          "bluez5.sbc-xq-support" = true;
+        };
+      };
+    }
+    {
+      matches = [
+        # Matches all sources
+        { "node.name" = "~bluez_input.*"; }
+        # Matches all outputs
+        { "node.name" = "~bluez_output.*"; }
+      ];
+    }
+  ];
+  };
 
+  environment.sessionVariables = rec {
+    PATH = [ 
+      "\${XDG_BIN_HOME}:\${HOME}/.npm-global/bin"
+    ];
+  };
 
 
   system.stateVersion = "22.05"; # Did you read the comment?
